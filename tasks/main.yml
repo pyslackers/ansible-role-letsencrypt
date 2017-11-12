@@ -11,9 +11,9 @@
     name: certbot
     state: latest
 
-- name: "Certificate exist for {{ domain }}"
+- name: "Certificate exist for {{ domains | first }}"
   stat:
-    path: "/etc/letsencrypt/live/{{ domain }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ domains | first  }}/fullchain.pem"
   register: fullchain
 
 - name: "Stop {{ webserver }}"
@@ -22,20 +22,20 @@
     state: stopped
   when: not fullchain.stat.exists
 
-- name: "generate staging ssl certificates for {{ domain }}"
-  command: "certbot certonly --standalone --email {{ email }} --agree-tos -n -d {{ domain }} --staging"
+- name: "generate staging ssl certificates for {{ domains | first }}"
+  command: "certbot certonly --standalone --email {{ email }} --agree-tos -n -d {{ domains | join(' -d ') }} --staging"
   when:
     - not fullchain.stat.exists
     - letsencrypt == 'staging'
 
-- name: "generate ssl certificates for {{ domain }}"
-  command: "certbot certonly --standalone --email {{ email }} --agree-tos -n -d {{ domain }}"
+- name: "generate ssl certificates for {{ domains | first }}"
+  command: "certbot certonly --standalone --email {{ email }} --agree-tos -n -d {{ domains | join(' -d ') }}"
   when:
     - not fullchain.stat.exists
     - letsencrypt != 'staging'
 
 - name: Assemble certificates
-  shell: "cat /etc/letsencrypt/live/{{ domain }}/privkey.pem /etc/letsencrypt/live/{{ domain }}/fullchain.pem > /etc/letsencrypt/live/{{ domain }}/privkeyandcert.pem"
+  shell: "cat /etc/letsencrypt/live/{{ domains | first }}/privkey.pem /etc/letsencrypt/live/{{ domains | first }}/fullchain.pem > /etc/letsencrypt/live/{{ domains | first }}/privkeyandcert.pem"
   when:
     - not fullchain.stat.exists
 
