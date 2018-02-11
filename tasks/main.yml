@@ -22,6 +22,14 @@
     state: stopped
   when: not fullchain.stat.exists
 
+- name: Enable UFW rule
+  ufw:
+    rule: allow
+    name: 'Nginx Full'
+  when:
+    - ufw_enabled
+    - not fullchain.stat.exists
+
 - name: "generate staging ssl certificates for {{ domains | first }}"
   command: "certbot certonly --standalone --email {{ email }} --agree-tos -n -d {{ domains | join(' -d ') }} --staging"
   when:

@@ -1,3 +1,4 @@
 ---
 
 certbot_port: 32456
+ufw_enabled: True
